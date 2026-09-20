@@ -24,7 +24,7 @@ def get_supabase_products():
 
 def validate():
     tn_prods = {p['variants'][0]['sku']: p for p in get_tn_products() if p['variants'][0]['sku']}
-    sb_prods = {p['sku']: p for p in get_supabase_products()}
+    sb_prods = {p['sku_proveedor']: p for p in get_supabase_products() if p.get('sku_proveedor')}
 
     print(f"Productos en Tiendanube: {len(tn_prods)}")
     print(f"Productos en Supabase: {len(sb_prods)}")
