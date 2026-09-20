@@ -15,8 +15,18 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 headers = {"Authentication": f"bearer {TN_TOKEN}", "User-Agent": "SyncApp (diego@ofertaclick.com)"}
 
 def get_tn_products():
-    response = requests.get(f"https://api.tiendanube.com/v1/{TN_STORE_ID}/products", headers=headers)
-    return response.json() if response.status_code == 200 else []
+    all_products = []
+    page = 1
+    while True:
+        response = requests.get(f"https://api.tiendanube.com/v1/{TN_STORE_ID}/products?page={page}&per_page=50", headers=headers)
+        if response.status_code != 200:
+            break
+        products = response.json()
+        if not products:
+            break
+        all_products.extend(products)
+        page += 1
+    return all_products
 
 def get_supabase_products():
     # Asumiendo que la tabla se llama 'productos'
