@@ -35,7 +35,11 @@ class TiendanubeAPI:
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=1, min=2, max=10),
-        retry=retry_if_exception_type(requests.exceptions.HTTPError)
+        retry=(
+            retry_if_exception_type(requests.exceptions.HTTPError) |
+            retry_if_exception_type(requests.exceptions.ConnectionError) |
+            retry_if_exception_type(requests.exceptions.Timeout)
+        )
     )
     def _request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
         url = f"{self.base_url}/{endpoint}"
@@ -64,7 +68,7 @@ class TiendanubeAPI:
                 break
             
             data = response.json()
-            if not data:
+            if not data or len(data) < 50: # Se asume 50 como el per_page fijo
                 break
             results.extend(data)
             page += 1

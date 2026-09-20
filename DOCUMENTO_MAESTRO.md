@@ -16,28 +16,30 @@ El producto final es un **Sistema de Gestión de Inventario y Sincronización (M
 - **Monitoreo**: Verificar logs de sincronización y estado de conexión.
 
 ### ¿Cómo se ejecuta?
-- **Dashboard**: Se ejecuta localmente mediante `streamlit run app.py`.
-- **Sincronización**: Se ejecuta mediante scripts de Python (`sync_engine.py`) que pueden ser programados como tareas automáticas.
-- **Keep-Alive**: Se ejecuta como un proceso en segundo plano (`keep_alive.py`) para mantener la conexión con Supabase.
+- **Dashboard (Control Remoto)**: Streamlit actúa como interfaz para ejecutar los scripts de backend. No contiene lógica de negocio.
+- **Motor (Backend)**: Scripts de Python (`01_pull_nube_to_db.py`, `2_push_nube.py`, etc.) que realizan las operaciones reales.
+- **Lógica de Combos**: Implementada mediante Vistas SQL en Supabase para cálculo en tiempo real.
+- **Automatización**: Webhooks para eventos en tiempo real y tareas programadas (cron) para auditoría diaria.
 
 ---
 
-## 2. Estado Actual del Proyecto (19/09/2026)
+## 2. Estado Actual del Proyecto (20/09/2026)
 
 | Fase | Estado | Descripción |
 | :--- | :--- | :--- |
 | **Configuración** | ✅ Completado | Entorno, variables de entorno y conexión validadas. |
-| **Estructura** | ✅ Completado | Proyecto `SYNC-NUBE-SUPABASE` inicializado en GitHub. |
-| **Dashboard** | 🚧 En progreso | Interfaz básica creada, requiere integración total con funciones de push. |
-| **Sincronización** | 🚧 En progreso | Lógica de combos implementada, falta validar contra datos reales. |
-| **Automatización** | ✅ Completado | Script `keep_alive.py` listo. |
+| **Arquitectura** | 🚧 En progreso | Separación estricta entre Front (Streamlit) y Motor (Python/SQL). |
+| **Dashboard** | 🚧 En progreso | Adaptación para actuar como "control remoto" de scripts. (Inventario y Combos en desarrollo) |
+| **Sincronización** | ✅ Completado | Mejoras en la lógica de paginación en `api_tiendanube.py` para asegurar la cobertura total de registros, y ampliación del manejo de excepciones para incluir errores de conexión y timeout. Implementación de upsert masivo en `sync_nube_to_db.py` para optimizar la escritura a base de datos, incluyendo la lógica de negocio para precio y visibilidad (precio a $9.999.999 y `visible_en_web` a False si stock <= 0). Migración de lógica de combos a Vistas SQL **(en progreso)**.
+| **Automatización** | 🚧 En progreso | Implementación de Webhooks y auditoría diaria. |
 
 ---
 
 ## 3. Próximos Pasos (Plan de Trabajo)
-1. **Validación de Sincronización**: Comparar SKUs y datos entre Tiendanube y Supabase (incluye pruebas de flujo).
-2. **Implementación de Push**: Habilitar la escritura desde Supabase hacia Tiendanube (incluye pruebas de flujo).
-3. **Automatización y Monitoreo**: Configurar servicios permanentes (incluye pruebas de flujo).
-4. **Capacitación y Gestión de Combos**: Pruebas finales de usuario (incluye pruebas de flujo).
+1. **Refactorización de Arquitectura**: Mover lógica de negocio del Dashboard a scripts de backend y Vistas SQL.
+2. **Implementación de Vistas SQL**: Crear `vista_stock_combos` en Supabase.
+3. **Integración de Scripts en Dashboard**: Configurar Streamlit para ejecutar scripts existentes (`01_pull`, `2_push`, `1_update`, etc.).
+4. **Configuración de Webhooks**: Reemplazar sincronización constante por eventos disparados por Tiendanube.
+5. **Auditoría y Monitoreo**: Configurar `sync_full.py` como tarea programada para auditoría diaria.
 
 *Nota: Cada paso incluye pruebas exhaustivas y requiere aprobación en Git.*

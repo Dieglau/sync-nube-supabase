@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client
 import requests
+from api_tiendanube import TiendanubeAPI
 
 load_dotenv()
 
@@ -12,21 +13,12 @@ TN_TOKEN = os.getenv("TN_TOKEN")
 TN_STORE_ID = os.getenv("TN_STORE_ID")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-headers = {"Authentication": f"bearer {TN_TOKEN}", "User-Agent": "SyncApp (diego@ofertaclick.com)"}
+# Se inicializa la API de Tiendanube para usar su método get_all con paginación mejorada
+tn_api = TiendanubeAPI()
 
 def get_tn_products():
-    all_products = []
-    page = 1
-    while True:
-        response = requests.get(f"https://api.tiendanube.com/v1/{TN_STORE_ID}/products?page={page}&per_page=50", headers=headers)
-        if response.status_code != 200:
-            break
-        products = response.json()
-        if not products:
-            break
-        all_products.extend(products)
-        page += 1
-    return all_products
+    # Usar el método get_all de TiendanubeAPI para obtener todos los productos con paginación robusta
+    return tn_api.get_all("products")
 
 def get_supabase_products():
     # Asumiendo que la tabla se llama 'productos'
@@ -44,6 +36,9 @@ def validate():
 
     print(f"SKUs faltantes en Supabase: {len(missing_in_sb)}")
     print(f"SKUs faltantes en Tiendanube: {len(missing_in_tn)}")
+    print("--- SKUs en Supabase pero no en Tiendanube (Candidatos a limpieza): ---")
+    for sku in missing_in_tn[:10]: # Mostrar primeros 10
+        print(sku)
 
 if __name__ == "__main__":
     validate()
